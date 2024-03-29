@@ -33,16 +33,25 @@ library(ISLR2)
 library(boot)
 library(readxl)
 library(ggplot2)
+library(dplyr)
 #loading csv
 bike_data <- read_excel("C:/Users/Chris/Desktop/490/SeoulBikeData.xlsx")
 
+n_rows_80_percent <- nrow(bike_data) * 0.8
+
+# Create a new data frame with the first 80% of rows
+new_data <- bike_data %>%
+  slice(1:n_rows_80_percent)
+test_data <- bike_data %>%
+  slice(n_rows_80_percent:nrow(bike_data)) 
+
 # Multiple Linear Regression
-lm.fit <- lm(Rented_Bikes ~ ., data = bike_data)
+lm.fit <- lm(Rented_Bikes ~ ., data = new_data)
 summary(lm.fit)
 predicted_values <- predict(lm.fit)
 
 # Step 3: Calculate Mean Squared Error (MSE)
-mse <- mean((bike_data$Rented_Bikes - predicted_values)^2)
+mse <- mean((test_data$Rented_Bikes - predicted_values)^2)
 
 # Print the Mean Squared Error
 print(mse)

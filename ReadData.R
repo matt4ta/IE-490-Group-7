@@ -4,6 +4,10 @@ readData <- function() {
   data <- read.csv('SeoulBikeData.csv', encoding = "latin1")
   data$Date <- NULL # model.matrix was making Date a qualitative variable so I took it out
   
+  # remove observations for non-functioning days
+  data <- data[data$Functioning_Day == 1, ]
+  data$Functioning_Day <- NULL
+  
   # Removing qualitative data which has already been cleaned
   data$Seasons <- NULL 
   data$Holiday_Orig <- NULL

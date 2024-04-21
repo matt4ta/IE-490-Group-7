@@ -1,8 +1,15 @@
-# reads data from csv and puts it into a matrix model thing
+# reads data from csv and into a data frame
 readData <- function() {
   setwd("~/GitHub/IE-490-Group-7")
   data <- read.csv('SeoulBikeData.csv', encoding = "latin1")
-  data$Date <- NULL # model.matrix was making Date a qualitative variable so I took it out
+  
+  # add weekday for each observation
+  Weekday <- as.POSIXlt(data$Date, format = "%d/%m/%Y")$wday
+  Weekday <- c("Sun", "Mon", "Tues", "Wed", "Thur", "Fri", "Sat")[as.POSIXlt(data$Date, format = "%d/%m/%Y")$wday + 1]
+  data <- cbind(data, Weekday)
+  
+  # remove date
+  data$Date <- NULL
   
   # remove observations for non-functioning days
   data <- data[data$Functioning_Day == 1, ]
@@ -12,6 +19,12 @@ readData <- function() {
   data$Seasons <- NULL 
   data$Holiday_Orig <- NULL
   data$Functioning_Day_Orig <- NULL
+  
+  # data$Spring <- NULL
+  # data$Summer <- NULL
+  # data$Autumn <- NULL
+  # data$Winter <- NULL
+  
   return(data)
 }
 

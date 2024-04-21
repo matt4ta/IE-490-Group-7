@@ -1,19 +1,19 @@
 library(glmnet)
-
+setwd("~/GitHub/IE-490-Group-7")
+source('ReadData.R')
 BikeData <- readData()
 
 # Only consider functioning days
 # BikeData <- BikeData[BikeData$Functioning_Day == 1, ]
 # BikeData$Functioning_Day <- NULL
 
-# BikeData$Spring <- NULL
-# BikeData$Summer <- NULL
-# BikeData$Autumn <- NULL
-# BikeData$Winter <- NULL
 
 # Prepare data for model
 X <- model.matrix(Rented_Bikes ~ ., BikeData)
 Y <- BikeData$Rented_Bikes
+
+N <- dim(X)[1]
+p <- dim(X)[2]
 
 # Create training and validation data sets
 set.seed(1)
@@ -32,43 +32,26 @@ lasso.mod$beta
 # Apply model to validation set
 lasso.pred <- predict(lasso.mod, s = bestlam, newx = X[test, ], type = "response")
 
-# calculate MSE
-lasso.MSE <- mean((lasso.pred - Y[test])^2)
-lasso.MSE
+num.folds <- 5
+lasso.cv.errors <- rep(0, num.folds)
+set.seed <-(1)
+indices <- sample(N, N)
+fold.size <- N / num.folds
 
-# calculate R-squared
-lasso.RSS <- sum((lasso.pred - Y[test])^2)
-TSS <- sum(Y[test]^2)
-lasso.r2 <- 1 - lasso.RSS / TSS
+for (i in 1:num.folds) {
+  validation <- indices[(1 + (i - 1) * fold.size):(i * fold.size)]
+  train.X <- X[-validation,]
+  validation.X <- X[validation,]
+  train.Y <- Y[-validation]
+  validation.Y <- Y[validation]
+  
+  lasso.cv <- glmnet(train.X, train.Y, alpha = 1, lambda = bestlam)
+  lasso.cv.pred <- predict(lasso.cv, s = bestlam, newx = validation.X, type = "response")
+  lasso.cv.errors[i] <- sqrt(mean((lasso.cv.pred - validation.Y)^2))
+}
 
-# calculate Adjusted R-squared
-N <- dim(BikeData[test, ])[1]
-p <- dim(BikeData[test, ])[2]
-lasso.adjr2 <- 1 - (1 - lasso.r2^2) * (N - 1) / (N - p - 1)
-
-
-#lasso.pred
-
-# create linear model based on training data
-lm.fit <- lm(Rented_Bikes ~ ., data = BikeData[train, ])
-
-# apply model to validation set
-lm.pred <- predict(lm.fit, BikeData[test, ])
-
-#calculate linear model MSE
-lm.MSE <- mean((lm.pred - Y[test])^2)
-
-# calculate linear model r-squared
-lm.RSS <- sum((lm.pred - Y[test])^2)
-lm.r2 <- 1 - lm.RSS / TSS
-
-# calculate linear model Adjusted R-Squared
-lm.adjr2 <- 1 - (1 - lm.r2^2) * (N - 1) / (N - p - 1)
+lasso.RMSE <- mean(lasso.cv.errors)
+lasso.RMSE
 
 
-# output error values
-lasso.MSE
-lasso.adjr2
-lm.MSE
-lm.adjr2
 

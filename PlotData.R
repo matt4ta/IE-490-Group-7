@@ -3,7 +3,9 @@ library(forcats)
 library(dplyr)
 
 setwd("~/GitHub/IE-490-Group-7")
+source('ReadData.R')
 PlotData <- read.csv('SeoulBikeData.csv', encoding = "latin1")
+PlotData <- PlotData[PlotData$Humidity > 0, ]
 
 # Plots for quantitative variables vs Rented Bikes Count
 plot(PlotData$Hour, PlotData$Rented_Bikes, main = "Hour vs Rented Bikes Count", 
@@ -29,3 +31,10 @@ plot(PlotData$Snowfall, PlotData$Rented_Bikes, main = "Snowfall vs Rented Bikes 
 PlotData %>% 
   mutate(Seasons = fct_relevel(Seasons, "Winter", "Spring", "Summer", "Autumn")) %>% 
   ggplot( aes(x = Seasons, y = Rented_Bikes, fill=Seasons)) + geom_violin()
+
+
+data <- readData()
+data %>% 
+  mutate(Weekday = fct_relevel(Weekday, "Sun", "Mon", "Tues", "Wed", "Thur", "Fri", "Sat")) %>% 
+  ggplot( aes(x = Weekday, y = Rented_Bikes, fill=Weekday)) + geom_violin() + 
+  stat_summary(fun = "mean", geom = "point", color = "red")

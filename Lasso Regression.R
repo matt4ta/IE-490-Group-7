@@ -3,11 +3,6 @@ setwd("~/GitHub/IE-490-Group-7")
 source('ReadData.R')
 BikeData <- readData()
 
-# Only consider functioning days
-# BikeData <- BikeData[BikeData$Functioning_Day == 1, ]
-# BikeData$Functioning_Day <- NULL
-
-
 # Prepare data for model
 X <- model.matrix(Rented_Bikes ~ ., BikeData)
 Y <- BikeData$Rented_Bikes
@@ -32,13 +27,15 @@ lasso.mod$beta
 # Apply model to validation set
 lasso.pred <- predict(lasso.mod, s = bestlam, newx = X[test, ], type = "response")
 
-num.folds <- 5
-lasso.cv.errors <- rep(0, num.folds)
+
+# perform k-fold cross validation
+k <- 5
+lasso.cv.errors <- rep(0, k)
 set.seed <-(1)
 indices <- sample(N, N)
-fold.size <- N / num.folds
+fold.size <- N / k
 
-for (i in 1:num.folds) {
+for (i in 1:k) {
   validation <- indices[(1 + (i - 1) * fold.size):(i * fold.size)]
   train.X <- X[-validation,]
   validation.X <- X[validation,]

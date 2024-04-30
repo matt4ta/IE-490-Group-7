@@ -7,7 +7,9 @@ readData <- function() {
   Weekday <- as.POSIXlt(data$Date, format = "%d/%m/%Y")$wday
   Weekday <- c("Sun", "Mon", "Tues", "Wed", "Thur", "Fri", "Sat")[as.POSIXlt(data$Date, format = "%d/%m/%Y")$wday + 1]
   data <- cbind(data, Weekday)
-
+  
+  # remove date
+  data$Date <- NULL
   
   # remove observations for non-functioning days
   data <- data[data$Functioning_Day == 1, ]

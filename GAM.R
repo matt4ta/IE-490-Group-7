@@ -20,7 +20,7 @@ p <- dim(X)[2]
 #                  s(Rainfall) + s(Snowfall) + Holiday + Seasons + Weekday, 
 #                data = X)
 
-gam.fit <- gam(Rented_Bikes ~ s(Hour, 7) + s(Temp, 5) + lo(Humidity, 3) + 
+gam.fit <- gam(Rented_Bikes ~ s(Hour, 7) + s(Temp, 5) + s(Humidity, 3) + 
                 s(Wind_speed, 3) + s(Visibility, 3) + s(Solar_Radiation, 4) + 
                 s(Rainfall, 4) + s(Snowfall, 2) + Holiday + Seasons + Weekday, 
                 data = X)

@@ -30,7 +30,7 @@ lasso.pred <- predict(lasso.mod, s = bestlam, newx = X[test, ], type = "response
 
 # perform k-fold cross validation
 k <- 5
-lasso.cv.errors <- rep(0, k)
+lasso.cv.RMSE <- rep(0, k)
 set.seed <-(1)
 indices <- sample(N, N)
 fold.size <- N / k
@@ -44,10 +44,10 @@ for (i in 1:k) {
   
   lasso.cv <- glmnet(train.X, train.Y, alpha = 1, lambda = bestlam)
   lasso.cv.pred <- predict(lasso.cv, s = bestlam, newx = validation.X, type = "response")
-  lasso.cv.errors[i] <- sqrt(mean((lasso.cv.pred - validation.Y)^2))
+  lasso.cv.RMSE[i] <- sqrt(mean((lasso.cv.pred - validation.Y)^2))
 }
 
-lasso.RMSE <- mean(lasso.cv.errors)
+lasso.RMSE <- mean(lasso.cv.RMSE)
 lasso.RMSE
 
 

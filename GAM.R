@@ -4,7 +4,7 @@ source('ReadData.R')
 X <- readData()
 # X$Visibility <- NULL
 # Prepare data for model
-Y <- BikeData$Rented_Bikes
+# Y <- BikeData$Rented_Bikes
 
 N <- dim(X)[1]
 p <- dim(X)[2]
@@ -20,7 +20,7 @@ p <- dim(X)[2]
 #                  s(Rainfall) + s(Snowfall) + Holiday + Seasons + Weekday, 
 #                data = X)
 
-gam.fit <- gam(Rented_Bikes ~ s(Hour, 5) + s(Temp, 5) + s(Humidity, 3) + 
+gam.fit <- gam(Rented_Bikes ~ s(Hour, 7) + s(Temp, 5) + lo(Humidity, 3) + 
                 s(Wind_speed, 3) + s(Visibility, 3) + s(Solar_Radiation, 4) + 
                 s(Rainfall, 4) + s(Snowfall, 2) + Holiday + Seasons + Weekday, 
                 data = X)
@@ -50,7 +50,7 @@ for (j in 1:20) {
     
     gam.cv <- gam(Rented_Bikes ~ s(Hour, j) + s(Temp, 5) + s(Humidity, 3) + 
                     ns(Wind_speed, 3) + s(Visibility, 3) + s(Solar_Radiation, 4) + 
-                    s(Rainfall, 4) + s(Snowfall, 2) + Holiday + Seasons + Weekday, 
+                    s(Rainfall, 4) + s(Snowfall, 2) + Holiday + Seasons, 
                   data = train.X)
     gam.cv.pred <- predict(gam.cv, newdata = validation.X)
     gam.cv.errors[i] <- sqrt(mean((gam.cv.pred - validation.Y)^2))

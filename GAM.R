@@ -9,32 +9,51 @@ Y <- X$Rented_Bikes
 N <- dim(X)[1]
 p <- dim(X)[2]
 
-# gam.fit <- gam(Y ~ s(Hour, 4) + ns(Temp, 4) + lo(Humidity, 0.3) + 
-#                  lo(Wind_speed, 0.3) + ns(Visibility, 4) + s(Solar_Radiation) + 
-#                  s(Rainfall) + s(Snowfall) + Winter + Spring + Summer + Autumn + 
-#                  Holiday + WeekdaySun + WeekdayMon + WeekdayTues + WeekdayWed + 
-#                  WeekdayThur + WeekdaySat, data = X)
-
-# gam.fit <- gam(Rented_Bikes ~ s(Hour) + s(Temp) + s(Humidity) + 
-#                  s(Wind_speed) + s(Visibility) + s(Solar_Radiation) + 
-#                  s(Rainfall) + s(Snowfall) + Holiday + Seasons + Weekday, 
-#                data = X)
-
 gam.fit <- gam(Rented_Bikes ~ s(Hour, 8) + s(Temp, 5) + s(Humidity, 3) + 
-                 ns(Wind_speed, 3) + s(Visibility, 3) + s(Solar_Radiation, 4) + 
-                 s(Rainfall, 4) + s(Snowfall, 2) + Holiday + Seasons + Weekday,  
+                 ns(Wind_speed, 3) + s(Visibility, 3) + ns(Solar_Radiation, 6) + 
+                 s(Rainfall, 4) + Snowfall + Holiday + Seasons + Weekday,  
                 data = X)
+summary(gam.fit)
+plot(gam.fit, se = T, col = "blue", terms = labels.Gam(X$Hour))
 
-# plot(gam.fit, se = T, col = "blue")
+plot(s(X$Hour, 8), se = T)
 
+# k-fold cv to choose parameters ------------------------------------------
 
-# perform k-fold cross validation
 k <- 5
 gam.cv.errors <- rep(0, k)
 set.seed(1)
 indices <- sample(N, N)
 fold.size <- N / k
 
+gam.cv.errors <- rep(0, k)
+gam.cv.variance <- rep(0, k)
+gam.cv.bias <- rep(0,k)
+
+for (i in 1:k) {
+  validation <- indices[(1 + (i - 1) * fold.size):(i * fold.size)]
+  train.X <- X[-validation,]
+  validation.X <- X[validation,]
+  train.Y <- Y[-validation]
+  validation.Y <- Y[validation]
+  
+  gam.cv <- gam(Rented_Bikes ~ s(Hour, 8) + s(Temp, 5) + s(Humidity, 3) + 
+                  ns(Wind_speed, 3) + s(Visibility, 3) + ns(Solar_Radiation, 6) + 
+                  s(Rainfall, 4) + Snowfall + Holiday + Seasons + Weekday, 
+                data = train.X)
+  gam.cv.pred <- predict(gam.cv, newdata = validation.X)
+  gam.cv.errors[i] <- sqrt(mean((gam.cv.pred - validation.Y)^2))
+  gam.cv.variance[i] <- mean((gam.cv.pred - mean(gam.cv.pred))^2)
+  gam.cv.bias[i] <- mean(gam.cv.pred - mean(validation.Y))
+}
+
+GAM.RMSE <- mean(gam.cv.errors)
+GAM.variance <- mean(gam.cv.variance)
+GAM.bias <- mean(gam.cv.bias)
+
+GAM.RMSE
+GAM.variance
+GAM.bias
 
 # k-fold CV to find df of hours for GAM -------------------------------------------------------
 
@@ -55,7 +74,7 @@ for (j in 1:25) {
     
     gam.cv <- gam(Rented_Bikes ~ s(Hour, j) + s(Temp, 5) + s(Humidity, 3) + 
                     ns(Wind_speed, 3) + s(Visibility, 3) + s(Solar_Radiation, 4) + 
-                    s(Rainfall, 4) + s(Snowfall, 2) + Holiday + Seasons + Weekday, 
+                    s(Rainfall, 4) + Snowfall + Holiday + Seasons + Weekday, 
                   data = train.X)
     gam.cv.pred <- predict(gam.cv, newdata = validation.X)
     gam.cv.errors[i] <- sqrt(mean((gam.cv.pred - validation.Y)^2))

@@ -4,7 +4,7 @@ source('ReadData.R')
 X <- readData()
 # X$Visibility <- NULL
 # Prepare data for model
-# Y <- BikeData$Rented_Bikes
+Y <- X$Rented_Bikes
 
 N <- dim(X)[1]
 p <- dim(X)[2]
@@ -20,12 +20,12 @@ p <- dim(X)[2]
 #                  s(Rainfall) + s(Snowfall) + Holiday + Seasons + Weekday, 
 #                data = X)
 
-gam.fit <- gam(Rented_Bikes ~ s(Hour, 7) + s(Temp, 5) + s(Humidity, 3) + 
-                s(Wind_speed, 3) + s(Visibility, 3) + s(Solar_Radiation, 4) + 
-                s(Rainfall, 4) + s(Snowfall, 2) + Holiday + Seasons + Weekday, 
+gam.fit <- gam(Rented_Bikes ~ s(Hour, 8) + s(Temp, 5) + s(Humidity, 3) + 
+                 ns(Wind_speed, 3) + s(Visibility, 3) + s(Solar_Radiation, 4) + 
+                 s(Rainfall, 4) + s(Snowfall, 2) + Holiday + Seasons + Weekday,  
                 data = X)
 
-plot(gam.fit, se = T, col = "blue")
+# plot(gam.fit, se = T, col = "blue")
 
 
 # perform k-fold cross validation
@@ -36,11 +36,16 @@ indices <- sample(N, N)
 fold.size <- N / k
 
 
-# k-fold CV for GAM -------------------------------------------------------
+# k-fold CV to find df of hours for GAM -------------------------------------------------------
 
-RMSE.df <- rep(0, 20)
-for (j in 1:20) {
+RMSE.df <- rep(0, 25)
+variance.df <- rep(0, 25)
+bias.df <- rep(0, 25)
+for (j in 1:25) {
   gam.cv.errors <- rep(0, k)
+  gam.cv.variance <- rep(0, k)
+  gam.cv.bias <- rep(0,k)
+
   for (i in 1:k) {
     validation <- indices[(1 + (i - 1) * fold.size):(i * fold.size)]
     train.X <- X[-validation,]
@@ -50,18 +55,34 @@ for (j in 1:20) {
     
     gam.cv <- gam(Rented_Bikes ~ s(Hour, j) + s(Temp, 5) + s(Humidity, 3) + 
                     ns(Wind_speed, 3) + s(Visibility, 3) + s(Solar_Radiation, 4) + 
-                    s(Rainfall, 4) + s(Snowfall, 2) + Holiday + Seasons, 
+                    s(Rainfall, 4) + s(Snowfall, 2) + Holiday + Seasons + Weekday, 
                   data = train.X)
     gam.cv.pred <- predict(gam.cv, newdata = validation.X)
     gam.cv.errors[i] <- sqrt(mean((gam.cv.pred - validation.Y)^2))
+    gam.cv.variance[i] <- mean((gam.cv.pred - mean(gam.cv.pred))^2)
+    gam.cv.bias[i] <- mean(gam.cv.pred - mean(validation.Y))
   }
 
   RMSE.df[j] <- mean(gam.cv.errors)
+  variance.df[j] <- mean(gam.cv.variance)
+  bias.df[j] <- mean(gam.cv.bias)
 }
 
-plot(1:20, RMSE.df, type = "b", 
+plot(1:25, scale(RMSE.df), type = "b", 
      xlab = "Degrees of Freedom of Smoothing Splines for Hours",
-     ylab = "RMSE")
+     ylab = "Standardized Values")
+
+lines(scale(variance.df), type = "b", col = 'blue')
+
+lines(scale(bias.df), type = "b",  col = 'red')
+legend('topright', legend = c('RMSE', "Variance", "Bias"), 
+       col = c('black', 'blue', 'red'),
+       lty = 1, lw = 2)
+grid()
+
+
+
+
 
 diffs <- rep(0, 18)
 

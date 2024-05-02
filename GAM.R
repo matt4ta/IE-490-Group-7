@@ -9,14 +9,13 @@ Y <- X$Rented_Bikes
 N <- dim(X)[1]
 p <- dim(X)[2]
 
-gam.fit <- gam(Rented_Bikes ~ s(Hour, 8) + s(Temp, 5) + s(Humidity, 3) + 
+gam.fit <- gam(Rented_Bikes ~ s(Hour, 9) + s(Temp, 5) + s(Humidity, 3) + 
                  ns(Wind_speed, 3) + s(Visibility, 3) + ns(Solar_Radiation, 6) + 
                  s(Rainfall, 4) + Snowfall + Holiday + Seasons + Weekday,  
                 data = X)
 summary(gam.fit)
-plot(gam.fit, se = T, col = "blue", terms = labels.Gam(X$Hour))
+plot(gam.fit, se = T, col = "blue")
 
-plot(s(X$Hour, 8), se = T)
 
 # k-fold cv to choose parameters ------------------------------------------
 
@@ -37,7 +36,7 @@ for (i in 1:k) {
   train.Y <- Y[-validation]
   validation.Y <- Y[validation]
   
-  gam.cv <- gam(Rented_Bikes ~ s(Hour, 8) + s(Temp, 5) + s(Humidity, 3) + 
+  gam.cv <- gam(Rented_Bikes ~ s(Hour, 9) + s(Temp, 5) + s(Humidity, 3) + 
                   ns(Wind_speed, 3) + s(Visibility, 3) + ns(Solar_Radiation, 6) + 
                   s(Rainfall, 4) + Snowfall + Holiday + Seasons + Weekday, 
                 data = train.X)
@@ -89,7 +88,8 @@ for (j in 1:25) {
 
 plot(1:25, scale(RMSE.df), type = "b", 
      xlab = "Degrees of Freedom of Smoothing Splines for Hours",
-     ylab = "Standardized Values")
+     ylab = "Standardized Values",
+     ylim = c(-2, 3))
 
 lines(scale(variance.df), type = "b", col = 'blue')
 

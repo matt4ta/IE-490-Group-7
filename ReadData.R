@@ -23,8 +23,9 @@ readData <- function() {
   data$Holiday_Orig <- NULL
   data$Functioning_Day_Orig <- NULL
   
-  # Remove dew point temp as a predictor due to collinearity with temperature
+  # Remove dew point temp  and humidity as a predictor due to collinearity with temperature
   data$Dew_Point_Temp <- NULL
+  data$Humidity <- NULL
   
   data$Spring <- NULL
   data$Summer <- NULL

@@ -9,7 +9,7 @@ Y <- X$Rented_Bikes
 N <- dim(X)[1]
 p <- dim(X)[2]
 
-gam.fit <- gam(Rented_Bikes ~ s(Hour, 9) + s(Temp, 5) + s(Humidity, 3) + 
+gam.fit <- gam(Rented_Bikes ~ s(Hour, 9) + s(Temp, 5) + 
                  ns(Wind_speed, 3) + s(Visibility, 3) + ns(Solar_Radiation, 6) + 
                  s(Rainfall, 4) + Snowfall + Holiday + Seasons + Weekday,  
                 data = X)
@@ -36,7 +36,7 @@ for (i in 1:k) {
   train.Y <- Y[-validation]
   validation.Y <- Y[validation]
   
-  gam.cv <- gam(Rented_Bikes ~ s(Hour, 9) + s(Temp, 5) + s(Humidity, 3) + 
+  gam.cv <- gam(Rented_Bikes ~ s(Hour, 9) + s(Temp, 5) + 
                   ns(Wind_speed, 3) + s(Visibility, 3) + ns(Solar_Radiation, 6) + 
                   s(Rainfall, 4) + Snowfall + Holiday + Seasons + Weekday, 
                 data = train.X)
@@ -56,10 +56,12 @@ GAM.bias
 
 # k-fold CV to find df of hours for GAM -------------------------------------------------------
 
-RMSE.df <- rep(0, 25)
-variance.df <- rep(0, 25)
-bias.df <- rep(0, 25)
-for (j in 1:25) {
+max.df <- 25
+
+RMSE.df <- rep(0, max.df)
+variance.df <- rep(0, max.df)
+bias.df <- rep(0, max.df)
+for (j in 1:max.df) {
   gam.cv.errors <- rep(0, k)
   gam.cv.variance <- rep(0, k)
   gam.cv.bias <- rep(0,k)
@@ -71,8 +73,8 @@ for (j in 1:25) {
     train.Y <- Y[-validation]
     validation.Y <- Y[validation]
     
-    gam.cv <- gam(Rented_Bikes ~ s(Hour, j) + s(Temp, 5) + s(Humidity, 3) + 
-                    ns(Wind_speed, 3) + s(Visibility, 3) + s(Solar_Radiation, 4) + 
+    gam.cv <- gam(Rented_Bikes ~ s(Hour, j) + s(Temp, 5) + 
+                    ns(Wind_speed, 3) + s(Visibility, 3) + ns(Solar_Radiation, 6) + 
                     s(Rainfall, 4) + Snowfall + Holiday + Seasons + Weekday, 
                   data = train.X)
     gam.cv.pred <- predict(gam.cv, newdata = validation.X)
@@ -86,10 +88,10 @@ for (j in 1:25) {
   bias.df[j] <- mean(gam.cv.bias)
 }
 
-plot(1:25, scale(RMSE.df), type = "b", 
+plot(1:max.df, scale(RMSE.df), type = "b", 
      xlab = "Degrees of Freedom of Smoothing Splines for Hours",
      ylab = "Standardized Values",
-     ylim = c(-2, 3))
+     ylim = c(-2,3))
 
 lines(scale(variance.df), type = "b", col = 'blue')
 
